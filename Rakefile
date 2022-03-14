@@ -14,6 +14,6 @@ Rake::TestTask.new(:no_slow_test) do |t|
   t.test_files = FileList['test/geld/*_test.rb']
 end
 
-# No rake task for slow test is prepared (CI does not need it since it is done one at a time with ruby commands).
+# No rake task for slow tests is prepared. (CI does not need it since ruby commands run them one at a time)
 
 task :default => :test

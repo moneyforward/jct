@@ -19,7 +19,7 @@ module Geld
       { rate: RATE105, start_on: Date.new(1997, 4, 1), end_on: Date.new(2014, 3, 31) },
       { rate: RATE108, start_on: Date.new(2014, 4, 1), end_on: Date.new(2019, 9, 30) },
       # If we were to use Date::Infinity.new for end_on, an exception would occur in the later calculation, 
-      # so here we will use a date that is very new.
+      # so here we will use a date far in the future.
       { rate: RATE110, start_on: Date.new(2019, 10, 1), end_on: Date.new(2999, 1, 1) }
     ]
 
@@ -33,7 +33,7 @@ module Geld
 
     def yearly_amount_with_tax(amount:, start_on:, end_on:, fraction: :truncate)
       # You can convert Integer/BigDecimal/Float/String/Rational classes to Rational,
-      # but the `amount` keyword argument does not accept BigDeciaml, Float and String in for the following reasons.
+      # but the `amount` keyword argument does not accept BigDeciaml, Float and String for the following reasons.
       #   - Rational objects may be implicitly converted to BigDecimal type when performing arithmetic operations using BigDecimal and Rational.
       #     - Also, when you try to convert BigDecimal to Rational, the resulting value may not be Rational, but BigDecimal.
       #   - Float is not accepted because it is not suitable for calculating sales tax rates.
@@ -50,13 +50,13 @@ module Geld
         # It determines whether there are overlapping periods by comparing the start and end dates of a certain consumption tax with 
         # the start and end dates of the period for which the tax-inclusive price is to be calculated this time.
         # If there is an overlap, the tax-inclusive price is calculated by multiplying the consumption tax rate for the applicable period
-        # by the number of days and pro rata amount for the overlap period.
+        # by the number of days and pro rata amount for the overlapping period.
         larger_start_on = [start_on, hash[:start_on]].max
         smaller_end_on = [end_on, hash[:end_on]].min
 
-        # Check if there is an overlap period
+        # Check if there is an overlapping period
         if larger_start_on <= smaller_end_on
-          # Number of days of overlap period
+          # Number of days of overlapping period
           number_of_days_in_this_excise_rate_term = (larger_start_on..smaller_end_on).count
 
           sum += (daily_amount * number_of_days_in_this_excise_rate_term * hash[:rate]).__send__(fraction)
@@ -92,21 +92,21 @@ module Geld
       raise ArgumentError.new('start_on must bigger than 1873/1/1') if start_on_mjd < EXCISE_HASHES.first[:start_on].mjd
       raise ArgumentError.new('amount must be greater than or equal to zero') if amount < 0
 
-      # This uses the number of days until end_on_mjd.
+      # Use the number of days until end_on_mjd.
       daily_amount = Rational(amount, (start_on_mjd..end_on_mjd).count)
 
       {}.tap do |return_hash|
         EXCISE_HASHES.inject(0) do |sum, hash|
           # It determines whether there are overlapping periods by comparing the start and end dates of a certain consumption tax with 
           # the start and end dates of the period for which the tax-inclusive price is to be calculated this time.
-          # If there is an overlap, the price for the subject period is calculated by multiplying the number of days of the overlap period
+          # If there is an overlap, the price for the subject period is calculated by multiplying the number of days of the overlapping period
           # by the pro rata amount.
           larger_start_on_mjd = [start_on_mjd, hash[:start_on].mjd].max
           smaller_end_on_mjd = [end_on_mjd, hash[:end_on].mjd].min
 
-          # Check if there is an overlap period
+          # Check if there is an overlapping period
           if larger_start_on_mjd <= smaller_end_on_mjd
-            # Number of days of overlap period
+            # Number of days of overlapping period
             number_of_days_in_this_excise_rate_term = (larger_start_on_mjd..smaller_end_on_mjd).count
             return_hash[hash[:rate]] = (daily_amount * number_of_days_in_this_excise_rate_term).truncate
           end
@@ -139,7 +139,7 @@ module Geld
         #    10%:49
         #    => 51+99900+49=100000
         #
-        # FIXME: Enumerable#sum` has been supported since ruby 2.4, but this gem uses `reduce` because it still needs to support ruby 2.3 series.
+        # FIXME: `Enumerable#sum` has been supported since ruby 2.4, but this gem uses `reduce` because it still needs to support ruby 2.3 series.
         summarize_separated_amount = return_hash.each_value.reduce(&:+)
         if amount != summarize_separated_amount
           return_hash[return_hash.each_key.min] += (amount - summarize_separated_amount)
