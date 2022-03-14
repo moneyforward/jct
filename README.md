@@ -15,7 +15,7 @@ Geld::Excise.rate(today)                            # => 1.05
 Geld::Excise.amount_with_tax(100)                   # => 108
 Geld::Excise.rate                                   # => 1.08
 
-# 2019/10/01からは消費税10%で計算するようになります
+# Calculate using 10% sales tax from 10/01/2019.
 today = Date.new(2019, 10, 1)
 Geld::Excise.amount_with_tax(100)                   # => 110
 Geld::Excise.rate                                   # => 1.1
@@ -30,5 +30,5 @@ Geld::Excise.amount_with_tax(999, fraction: :ceil)  # => 1079
 Bug reports and pull requests are welcome on GitHub at https://github.com/moneyforward/geld-excise.
 
 ### tips
-- 機能追加などのPRと、Bump versionのPRは別にいただけると助かります。
+- Please separate the PR for additional features from the PR for versioning.
 
