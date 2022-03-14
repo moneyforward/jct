@@ -13,11 +13,13 @@ module Geld
     RATE108 = 1.08r.freeze
     RATE110 = 1.10r.freeze
     EXCISE_HASHES = [
-      { rate: RATE100, start_on: Date.new(1873, 1, 1), end_on: Date.new(1989, 3, 31) }, # 1873/1/1は日本が太陽暦への改暦を行った年(明治改暦)
+      # 1873/1/1 is the date when Japan changed its calendar to the solar calendar (Meiji era).
+      { rate: RATE100, start_on: Date.new(1873, 1, 1), end_on: Date.new(1989, 3, 31) },
       { rate: RATE103, start_on: Date.new(1989, 4, 1), end_on: Date.new(1997, 3, 31) },
       { rate: RATE105, start_on: Date.new(1997, 4, 1), end_on: Date.new(2014, 3, 31) },
       { rate: RATE108, start_on: Date.new(2014, 4, 1), end_on: Date.new(2019, 9, 30) },
-      # end_onにDate::Infinity.new を使用すると、後の計算で例外が起こるので超未来日の日付を使用する
+      # If we were to use Date::Infinity.new for end_on, an exception would occur in the later calculation, 
+      # so here we will use a date far in the future.
       { rate: RATE110, start_on: Date.new(2019, 10, 1), end_on: Date.new(2999, 1, 1) }
     ]
 
@@ -29,13 +31,13 @@ module Geld
       (BigDecimal("#{amount}") * rate(date)).__send__(fraction)
     end
 
-    # start_on は期間の開始日, end_on は期間の終了日をそれぞれ受け取る
     def yearly_amount_with_tax(amount:, start_on:, end_on:, fraction: :truncate)
-      # Integer/BigDecimal/Float/String/Rational classはRationalに変換できるが、下記の理由からamountにBigDeciamlとFloat, Stringは受け付けないこととする
-      #   - BigDecimalは、Rationalとの四則演算を行なうとRationalオブジェクトが暗黙的にBigDecimal型に変換されてしまうことがあるため
-      #     - またBigDecimalをRationalに変換しようとした際にも変換処理の返り値がRationalでなく、BigDecimalになることがあるため
-      #   - Floatはそもそも消費税率計算に向いていないので受け付けない
-      #   - Stringの場合は例えば 1.1.1 などの変換できないデータが渡ってくること例外が起きてしまうため受け付けない
+      # You can convert Integer/BigDecimal/Float/String/Rational classes to Rational,
+      # but the `amount` keyword argument does not accept BigDeciaml, Float and String for the following reasons.
+      #   - Rational objects may be implicitly converted to BigDecimal type when performing arithmetic operations using BigDecimal and Rational.
+      #     - Also, when you try to convert BigDecimal to Rational, the resulting value may not be Rational, but BigDecimal.
+      #   - Float is not accepted because it is not suitable for calculating sales tax rates.
+      #   - String is not accepted because an exception is raised by data that cannot be converted, such as 1.1.1, for example.
       raise ArgumentError.new('amount data-type must be Integer or Rational') unless amount.is_a?(Integer) || amount.is_a?(Rational)
       raise ArgumentError.new('start_on data-type must be Date') unless start_on.is_a?(Date)
       raise ArgumentError.new('end_on data-type must be Date') unless end_on.is_a?(Date)
@@ -45,15 +47,16 @@ module Geld
       daily_amount = Rational(amount, (start_on..end_on).count)
 
       EXCISE_HASHES.inject(0) do |sum, hash|
-        # ある消費税の開始日・終了日と、今回税込み価格を算出したい期間の開始日・終了日をそれぞれ比較することで
-        # 重複期間があるかどうかを判定している
-        # 重複がある場合その重複期間の日数を取得し、対象期間の消費税率と日数、日割り金額をかけて税込み価格を算出する
+        # It determines whether there are overlapping periods by comparing the start and end dates of a certain consumption tax with 
+        # the start and end dates of the period for which the tax-inclusive price is to be calculated this time.
+        # If there is an overlap, the tax-inclusive price is calculated by multiplying the consumption tax rate for the applicable period
+        # by the number of days and pro rata amount for the overlapping period.
         larger_start_on = [start_on, hash[:start_on]].max
         smaller_end_on = [end_on, hash[:end_on]].min
 
-        # 重複期間があるかどうか判定している
+        # Check if there is an overlapping period
         if larger_start_on <= smaller_end_on
-          # 重複期間の日数を取得する
+          # Number of days of overlapping period
           number_of_days_in_this_excise_rate_term = (larger_start_on..smaller_end_on).count
 
           sum += (daily_amount * number_of_days_in_this_excise_rate_term * hash[:rate]).__send__(fraction)
@@ -63,22 +66,25 @@ module Geld
       end
     end
 
-    # 金額と期間を受け取り、その金額を消費税期間ごとに分割したhashを返却する
-    # 例: 1000, Date.new(1997, 3, 31), Date.new(1997, 4, 9)
+    # Takes the amount and period and returns a HASH with the amount divided by the sales tax period.
+    # e.g. 1000, Date.new(1997, 3, 31), Date.new(1997, 4, 9)
     # => { Geld::Excise::RATE103 => 100, Geld::Excise::RATE105 => 900 }
     #
-    # MEMO: このメソッドでは消費税計算は行わない
-    # 例えば、8%の期間の金額と10%の期間の金額があった場合に、他にも合算するべき料金があった場合（基本料金年額とオプション料金など）、
-    # このメソッドにて税込金額を返却してしまうと、他の料金との合算ができなくなる。
+    # MEMO: This method does not perform sales tax calculations
+    # For example, if there is an amount to which the 8% tax rate applies and an amount to which the 10% tax rate applies,
+    # and there are other charges that should be combined (e.g., the annual basic fee and the optional fee),
+    # if this method returns the amount including tax, it cannot be combined with the other charges.
     def amount_separated_by_rate(amount:, start_on:, end_on:)
-      # Integer/BigDecimal/Float/String/Rational classはRationalに変換できるが、下記の理由からamountにBigDeciamlとFloat, Stringは受け付けないこととする
-      #   - BigDecimalとFloatは、RationalとFloatの四則演算を行なうとRationalオブジェクトが暗黙的にBigDecimal or Float型に変換されてしまうことがあるため
-      #   - Stringの場合は例えば 1.1.1 などの変換できないデータが渡ってくること例外が起きてしまうため受け付けない
+      # You can convert Integer/BigDecimal/Float/String/Rational classes to Rational,
+      # but the `amount` keyword argument does not accept BigDeciaml, Float and String in for the following reasons.
+      #   - Rational objects may be implicitly converted to BigDecimal or Float type 
+      #     when performing arithmetic operations using BigDecimal and Rational, or Float and Rational.
+      #   - String is not accepted because an exception is raised by data that cannot be converted, such as 1.1.1, for example.
       raise ArgumentError.new('amount data-type must be Integer or Rational') unless amount.is_a?(Integer) || amount.is_a?(Rational)
       raise ArgumentError.new('start_on data-type must be Date') unless start_on.is_a?(Date)
       raise ArgumentError.new('end_on data-type must be Date') unless end_on.is_a?(Date)
 
-      #修正ユリウス日を使う事でDateをすべてをIntegerで扱う事が来る為高速化出来る
+      # By using the modified Julian date, we can handle all Date as Integer. This speeds up the process.
       start_on_mjd = start_on.mjd
       end_on_mjd = end_on.mjd
 
@@ -86,54 +92,54 @@ module Geld
       raise ArgumentError.new('start_on must bigger than 1873/1/1') if start_on_mjd < EXCISE_HASHES.first[:start_on].mjd
       raise ArgumentError.new('amount must be greater than or equal to zero') if amount < 0
 
-      # これはend_on_mjdを含む日付でカウントしている
+      # Use the number of days until end_on_mjd.
       daily_amount = Rational(amount, (start_on_mjd..end_on_mjd).count)
 
       {}.tap do |return_hash|
         EXCISE_HASHES.inject(0) do |sum, hash|
-          # ある消費税の開始日・終了日と、今回税込み価格を算出したい期間の開始日・終了日をそれぞれ比較することで
-          # 重複期間があるかどうかを判定している
-          # 重複がある場合その重複期間の日数を取得し、日割り金額をかけて対象期間分の価格を算出する
+          # It determines whether there are overlapping periods by comparing the start and end dates of a certain consumption tax with 
+          # the start and end dates of the period for which the tax-inclusive price is to be calculated this time.
+          # If there is an overlap, the price for the subject period is calculated by multiplying the number of days of the overlapping period
+          # by the pro rata amount.
           larger_start_on_mjd = [start_on_mjd, hash[:start_on].mjd].max
           smaller_end_on_mjd = [end_on_mjd, hash[:end_on].mjd].min
 
-          # 重複期間があるかどうか判定している
+          # Check if there is an overlapping period
           if larger_start_on_mjd <= smaller_end_on_mjd
-            # 重複期間の日数を取得する
+            # Number of days of overlapping period
             number_of_days_in_this_excise_rate_term = (larger_start_on_mjd..smaller_end_on_mjd).count
             return_hash[hash[:rate]] = (daily_amount * number_of_days_in_this_excise_rate_term).truncate
           end
         end
 
-        # 分割されたamountが対象となる税率の個数で割り切れない値の場合、
-        # 引数に入ってきたamountと分割したamountの合計が少なくなる場合がある。
-        # これは分割時に割り切れない値を切り捨てている為である。
-        # 例:
+        # If the divided amount is not divisible by the number of target tax rates, 
+        # the sum of the amount in the argument and the divided amount may be less than the actual value.
+        # This is because the undivided value is truncated at the time of division.
+        # e.g.
         #    amount: 100000, start_on: 1997/3/31, end_on 2014/4/1の場合
         #    3%:16
         #    5%:99_967
         #    8%:16
         #    => 16+99967+16=99999
-        #
-        # 引数に入ってきたamountと分割したamountの合計を合わせるために
-        # ズレている金額を最も少ない消費税額に属するamountに足すようにする。
-        # 最も少ない消費税額に属するamountに不足分を足すのは、
-        # これを元に消費税が計算された場合にユーザ有利になるようにという配慮。
-        # 例1:
+        # Add the amount that is out of alignment to the amount that belongs to the lowest sales tax amount
+        # to equal the sum of the argument amount and the divided amount.
+        # The reason for adding the shortfall to the amount that belongs to the least amount of consumption tax 
+        # is so that the user will have an advantage when the consumption tax is calculated based on this amount.
+        # Example 1
         #    amount: 100000, start_on: 1997/3/31, end_on 2014/4/1の場合
-        #    3%:17 <-本当は16だが、1円足す
+        #    3%:17 <- Actually 16, but add 1 yen.
         #    5%:99_967
         #    8%:16
         #    => 17+99967+16=100000
         #
-        # 例2:
+        # Example 2:
         #    amount: 100000, start_on: 2014/3/31, end_on 2019/10/1の場合
-        #    5%:51 <-本当は49だが、2円足す
+        #    5%:51 <- Actually 49, but add 2 yen.
         #    8%:99_900
         #    10%:49
         #    => 51+99900+49=100000
         #
-        # FIXME: Enumerable#sumはruby 2.4からサポートされているが、本gemはruby 2.3系をまだサポートする必要がある為reduceを使っている
+        # FIXME: `Enumerable#sum` has been supported since ruby 2.4, but this gem uses `reduce` because it still needs to support ruby 2.3 series.
         summarize_separated_amount = return_hash.each_value.reduce(&:+)
         if amount != summarize_separated_amount
           return_hash[return_hash.each_key.min] += (amount - summarize_separated_amount)

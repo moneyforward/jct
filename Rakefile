@@ -1,7 +1,7 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
 
-# slow test含めてすべてのテストを回す場合
+# Run all tests including slow tests
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "lib"
@@ -14,6 +14,6 @@ Rake::TestTask.new(:no_slow_test) do |t|
   t.test_files = FileList['test/geld/*_test.rb']
 end
 
-# slow test用のrake taskは用意しない（CIでは1つずつrubyコマンドで叩くのでといらない）
+# No rake task for slow tests is prepared. (CI does not need it since ruby commands run them one at a time)
 
 task :default => :test
