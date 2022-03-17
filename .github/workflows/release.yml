@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - lib/geld/excise/version.rb
+      - lib/jct/excise/version.rb
 
 jobs:
   build:

@@ -11,7 +11,7 @@ end
 Rake::TestTask.new(:no_slow_test) do |t|
   t.libs << "test"
   t.libs << "lib"
-  t.test_files = FileList['test/geld/*_test.rb']
+  t.test_files = FileList['test/jct/*_test.rb']
 end
 
 # No rake task for slow tests is prepared. (CI does not need it since ruby commands run them one at a time)
