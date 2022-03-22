@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "jct"
   spec.version       = Jct::VERSION
   spec.licenses      = ['MIT']
-  spec.authors       = ["Ryo Shibuya"]
+  spec.authors       = ["Money Forward, Inc."]
   spec.email         = ["shibuya.ryo@moneyforward.co.jp"]
 
   spec.summary       = %q{Japanese excise tax calculator}
