@@ -63,6 +63,6 @@ jobs:
       - run: bundle check --path .bundle || bundle install --path .bundle
       - name: MiniTest
         run: |
-            TESTFILES=$(ls -d test/geld/slow_test/*)
+            TESTFILES=$(ls -d test/jct/slow_test/*)
             bundle exec ruby -e "%w[$TESTFILES].each { |test_file| load test_file }"
         timeout-minutes: 60

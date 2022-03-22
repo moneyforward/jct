@@ -11,5 +11,5 @@ group :test do
   gem 'minitest-power_assert'
 end
 
-# Specify your gem's dependencies in geld-excise.gemspec
+# Specify your gem's dependencies in jct.gemspec
 gemspec

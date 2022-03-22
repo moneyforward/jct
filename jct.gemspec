@@ -1,17 +1,17 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'geld/excise/version'
+require 'jct/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "geld-excise"
-  spec.version       = Geld::Excise::VERSION
+  spec.name          = "jct"
+  spec.version       = Jct::VERSION
   spec.authors       = ["Ryo Shibuya"]
   spec.email         = ["shibuya.ryo@moneyforward.co.jp"]
 
   spec.summary       = %q{Japanese excise tax calculator}
   spec.description   = %q{Japanese excise tax calculator}
-  spec.homepage      = "https://github.com/moneyforward/geld-excise"
+  spec.homepage      = "https://github.com/moneyforward/jct"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
