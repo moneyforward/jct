@@ -1,6 +1,8 @@
 # Jct
 Japanese excise tax calculator
 
+[![github workflow status](https://img.shields.io/github/workflow/status/moneyforward/jct/CI/main)](https://github.com/moneyforward/jct/actions) [![crates](https://img.shields.io/gem/v/jct)](https://rubygems.org/gems/jct)
+
 ## Installation
 
 ```
