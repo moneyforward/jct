@@ -6,6 +6,7 @@ require 'jct/version'
 Gem::Specification.new do |spec|
   spec.name          = "jct"
   spec.version       = Jct::VERSION
+  spec.licenses      = ['MIT']
   spec.authors       = ["Ryo Shibuya"]
   spec.email         = ["shibuya.ryo@moneyforward.co.jp"]
 
