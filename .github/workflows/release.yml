@@ -17,13 +17,9 @@ jobs:
           GEM_VERSION=$(ruby -e "require 'rubygems'; gemspec = Dir.glob(\"./**/*.gemspec\").first; puts Gem::Specification::load(gemspec).version")
           TAG="v$GEM_VERSION"
           git tag $TAG && git push origin $TAG
-      - name: Set up github private registry key
-        run: |
-          mkdir -p ~/.gem
-          touch ~/.gem/credentials
-          chmod 600 ~/.gem/credentials
-          echo ":github: Bearer ${{ secrets.GITHUB_TOKEN }}" >> ~/.gem/credentials
       - name: Build and push gem
         run: |
           gem build *.gemspec
           gem push ./*.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_PASSWORD }}
