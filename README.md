@@ -3,7 +3,9 @@ Japanese excise tax calculator
 
 ## Installation
 
-    $ gem install jct
+```
+$ gem install jct
+```
 
 ## Usage
 ```ruby
