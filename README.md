@@ -18,21 +18,19 @@ $ gem install jct
 ```ruby
 require 'jct'
 
-today = Date.new(2014, 3, 31)
-Jct.amount_with_tax(100, date: today)      # => 105
-Jct.rate(today)                            # => 1.05
+date = Date.new(2019, 9, 30)
+Jct.amount_with_tax(100, date: date) # => 108
+Jct.rate(date)                       # => 1.08
 
-Jct.amount_with_tax(100)                   # => 108
-Jct.rate                                   # => 1.08
+# If `date` is not passed, the excise tax rate based on `Date.today` is used
+if Date.today == Date.new(2019, 10, 1)
+  Jct.amount_with_tax(100)                   # => 110
+  Jct.rate                                   # => 1.1
 
-# Calculate using 10% sales tax from 10/01/2019.
-today = Date.new(2019, 10, 1)
-Jct.amount_with_tax(100)                   # => 110
-Jct.rate                                   # => 1.1
-
-Jct.amount_with_tax(999)                   # => 1078
-Jct.amount_with_tax(999, fraction: :floor) # => 1078
-Jct.amount_with_tax(999, fraction: :ceil)  # => 1079
+  Jct.amount_with_tax(999)                   # => 1098
+  Jct.amount_with_tax(999, fraction: :floor) # => 1098
+  Jct.amount_with_tax(999, fraction: :ceil)  # => 1099
+end
 ```
 
 ## Contributing
@@ -41,4 +39,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/moneyf
 
 ### tips
 - Please separate the PR for additional features from the PR for versioning.
-
