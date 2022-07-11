@@ -1,6 +1,6 @@
 <div align="center">
 
-# Jct
+![jct](./resources/jct.png)
 
 Japanese excise tax calculator
 
