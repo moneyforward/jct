@@ -39,3 +39,9 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/moneyf
 
 ### tips
 - Please separate the PR for additional features from the PR for versioning.
+
+Apache-2.0
+
+## Licenses
+
+JCT is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
