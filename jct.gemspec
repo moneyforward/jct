@@ -6,7 +6,7 @@ require 'jct/version'
 Gem::Specification.new do |spec|
   spec.name          = "jct"
   spec.version       = Jct::VERSION
-  spec.licenses      = ['MIT']
+  spec.licenses      = ['Apache-2.0']
   spec.authors       = ["Money Forward, Inc."]
   spec.email         = ["shibuya.ryo@moneyforward.co.jp"]
 

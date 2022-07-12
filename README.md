@@ -35,7 +35,12 @@ end
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/moneyforward/jct.
+Bug reports and pull requests are welcome!
 
 ### tips
+
 - Please separate the PR for additional features from the PR for versioning.
+
+## Licenses
+
+JCT is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
