@@ -1,0 +1,10 @@
+D = Steep::Diagnostic
+
+target :test do
+  check "."
+  signature "../sig"
+
+  library "jct", "date"
+
+  configure_code_diagnostics(D::Ruby.all_error)
+end

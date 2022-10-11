@@ -1,0 +1,13 @@
+module Jct
+  VERSION: String
+
+  type fractions = :truncate | :round | :ceil | :floor
+
+  def self.amount_with_tax: (Integer, ?date: Date, ?fraction: fractions) -> Integer
+
+  def self.yearly_amount_with_tax: (amount: Integer, start_on: Date, end_on: Date, ?fraction: fractions) -> Integer
+
+  def self.amount_separated_by_rate: (amount: Integer, start_on: Date, end_on: Date) -> Hash[Rational, Integer]
+
+  def self.rate: (?Date) -> Rational
+end
