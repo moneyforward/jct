@@ -2,7 +2,6 @@ D = Steep::Diagnostic
 
 target :test do
   check "."
-  signature "../sig"
 
   library "jct", "date"
 
