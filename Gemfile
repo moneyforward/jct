@@ -9,6 +9,7 @@ group :test do
   gem 'minitest'
   gem 'minitest-around'
   gem 'minitest-power_assert'
+  gem 'steep'
 end
 
 # Specify your gem's dependencies in jct.gemspec
